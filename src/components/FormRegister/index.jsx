@@ -1,15 +1,17 @@
-
+import { useForm } from "react-hook-form";
 import { Button } from "../../Fragments/Button"
 import { useContext } from "react"
 import { TodoContext } from "../../provider"
 
 export const FormRegister = () => {
 
-    const { register, handleSubmit, reset, createNote } = useContext(TodoContext)
+    const { register, handleSubmit, reset } = useForm()
+
+    const { createNote } = useContext(TodoContext)
 
     const submit = (formData) => {
 
-        createNote(formData)
+        createNote.mutate(formData)
         reset()
 
     }

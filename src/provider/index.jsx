@@ -1,69 +1,43 @@
-import { createContext, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { createContext } from "react";
 import { Api } from "../services/api";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 
 export const TodoContext = createContext({})
 
 export const ThemeProvider = ({ children }) => {
 
-    const [ list, setList ] = useState([])
-    const { register, handleSubmit, reset } = useForm()
+    const { data: list } = useQuery({queryKey: ["item"], queryFn: async () => {
+        const { data } = await Api.get("/todo")
+        return data
+    }})
 
-    useEffect(() => {
-        const getRead = async () => {
+    const queryClient = useQueryClient()
 
-            try {
-                const { data } = await Api.get("/todo")
-                setList(data)
-            } catch (error) {
-                console.log(error)
-            }
-
-        }
-
-        getRead()
-    }, [])
-
-    const createNote = async (formData) => {
-
-        try {
-
-            const newPost = {
-                title: formData.title,
-                content: formData.content,
-            }
-
-            const { data } = await Api.post("/todo", newPost)
-
-            setList([...list, data])
-
-        } catch (error) {
-
-            console.log(error)
-
-        }
-
+    const revalidate = () => {
+        queryClient.invalidateQueries({ queryKey: ["item"] })
     }
 
-    const deletePost = async (deleteId) => {
+    const createNote = useMutation({
+        mutationFn: async (formData) => {
+            return await Api.post("/todo", formData)
+        },
 
-        try {
+        onSuccess: revalidate,
+    })
 
-            await Api.delete(`/todo/${deleteId}`)
+    const deletePost = useMutation({
+        mutationFn: async (deleteId) => {
+            return await Api.delete(`/todo/${deleteId}`)
+        },
 
-            const deleteNewPost = list.filter(item => item.id !== deleteId)
-            setList(deleteNewPost)
-
-        } catch (error) {
-
-            console.log(error)
-
+        onSuccess: () => {
+            revalidate()
         }
-    }
+    })
 
     return(
        
-        <TodoContext.Provider value={ { list, register, handleSubmit, reset, createNote, deletePost } }>
+        <TodoContext.Provider value={ { list, createNote, deletePost } }>
 
             { children }
             

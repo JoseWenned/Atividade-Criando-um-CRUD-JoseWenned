@@ -7,12 +7,12 @@ export const ItemList = () => {
 
     return(
         <>
-            {list.map((item) => {
+            {list?.map((item) => {
                 return(
                     <li className="mt-2" key={item.id}>
                         <h3 className="font-semibold">{item.title}</h3>
                         <p className="mt-1">{item.content}</p>
-                        <button className=" w-24 border-2 rounded border-none mt-4 h-9 bg-red-600 text-white font-semibold" onClick={() => deletePost(item.id)} type="submit">Remove</button>
+                        <button className=" w-24 border-2 rounded border-none mt-4 h-9 bg-red-600 text-white font-semibold" onClick={() => deletePost.mutate(item.id)} type="submit">Remove</button>
                     </li>
                 )
             })}   
